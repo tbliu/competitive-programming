@@ -83,6 +83,3 @@ read_lines_string() ->
     {ok, Data} = file:read_file("input.txt"),
     Lines = string:split(binary_to_list(Data), "\n", all),
     [L || L <- Lines, L =/= "" ].
-
-
-% 7243
