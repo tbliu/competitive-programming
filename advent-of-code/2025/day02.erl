@@ -12,6 +12,8 @@ main(_) ->
     % - once you can no longer add digits, take the first two digits slice; copy it as many times to get it into range
     % - repeat until you've gone past half the digits. Keep a running list of invalids you added so you don't double count
     SumAllInvalid = sum_invalid2(Lines),
+
+    % Incorrect: 49046139643 - too low
     io:format("Part 2: ~p~n", [SumAllInvalid]),
     done.
 
@@ -46,7 +48,8 @@ sum_all_repeating(Start, End, TakeFirstN, TargetLength, MaxLength, Seen, Acc) ->
             sum_all_repeating(Start, End, TakeFirstN + 1, TargetLength, MaxLength, Seen, Acc);
         TFN ->
             % io:format("Args: TFN ~p Target Length ~p Max Length ~p~n", [TakeFirstN, TargetLength, MaxLength]),
-            FirstNDigits = min(lists:sublist(Start, TFN), lists:sublist(End, TFN)),
+            % FirstNDigits = min(lists:sublist(Start, TFN), lists:sublist(End, TFN)),
+            FirstNDigits = "1" ++ string:copies("0", TFN-1),
             NumRepeat = TargetLength div TFN,
             {RangeSum1, NewSeen1} = sum_all_repeating_length(Start, End, FirstNDigits, NumRepeat, Seen, 0),
             {RangeSum2, NewSeen2} = sum_all_repeating(Start, End, TFN + 1, TargetLength, MaxLength, NewSeen1, 0),
