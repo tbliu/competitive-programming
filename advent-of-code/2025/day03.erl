@@ -11,50 +11,44 @@ main(_) ->
     done.
 
 
-% Part 2 code - 98417339375687 too low
+% Part 2 code
 sum_max_banks_greedy(Lines, NumDigits) -> sum_max_banks_greedy(Lines, NumDigits, 0).
 sum_max_banks_greedy([], _, Acc) -> Acc;
 sum_max_banks_greedy([H|T], NumDigits, Acc) ->
     MaxBankValue = get_max_bank_value_greedy(H, NumDigits),
-    % io:format("Max bank value for ~p is ~p~n", [H, MaxBankValue]),
     sum_max_banks_greedy(T, NumDigits, Acc + MaxBankValue).
 
-get_max_bank_value_greedy([H|T], NumDigits) ->
-    % Always assume well-formed input; we will always start with the first value
-    {HNum, _} = string:to_integer([H]),
-    get_max_bank_value_greedy(T, NumDigits, HNum, HNum).
-get_max_bank_value_greedy([], _, _, Acc) -> Acc;
-get_max_bank_value_greedy([H|T], NumDigits, LastDigit, Acc) ->
-    AccStr = integer_to_list(Acc),
-    AccLength = string:length(AccStr),
+
+get_max_bank_value_greedy(Bank, NumDigits) ->
+    Digits = [ D - $0 || D <- Bank ],
+    SelectedDigits = max_k_digits(Digits, NumDigits),
+    Value = join_int_list(SelectedDigits, 0),
+    Value.
 
 
-    DigitsNeeded = NumDigits - AccLength,
-    DigitsRemaining = string:length(T),
+max_k_digits(Digits, DigitsNeeded) ->
+    Drops = length(Digits) - DigitsNeeded,
+    Stack = max_k_digits(Digits, Drops, []),
+    lists:sublist(lists:reverse(Stack), DigitsNeeded).
 
-    {HNum, _} = string:to_integer([H]),
-    ReplaceLastDigit = HNum > LastDigit andalso DigitsRemaining >= DigitsNeeded,
-    CanTakeDigit = DigitsNeeded > 0,
-
-    case ReplaceLastDigit of
-        true ->
-            get_max_bank_value_greedy(T, NumDigits, HNum, Acc div 10 * 10 + HNum);
-        false ->
-            case CanTakeDigit of
-                true ->
-                    get_max_bank_value_greedy(T, NumDigits, HNum, Acc * 10 + HNum);
-                false ->
-                    get_max_bank_value_greedy(T, NumDigits, LastDigit, Acc)
-            end
+max_k_digits([], _, Acc) -> Acc;
+max_k_digits([Digit|Rest], Drops, Acc) ->
+    % Pop from stack if Digit produces a larger value
+    case Acc of
+        [Head|Tail] when Drops > 0, Head < Digit ->
+            max_k_digits([Digit|Rest], Drops - 1, Tail);
+        _ ->
+            max_k_digits(Rest, Drops, [Digit|Acc])
     end.
 
+join_int_list([], Acc) -> Acc;
+join_int_list([H|T], Acc) -> join_int_list(T, 10*Acc + H).
 
 % Part 1 code
 sum_max_banks(Lines, NumDigits) -> sum_max_banks(Lines, NumDigits, 0).
 sum_max_banks([], _, Acc) -> Acc;
 sum_max_banks([H|T], NumDigits, Acc) ->
     MaxBankValue = get_max_bank_value(H, NumDigits),
-    % io:format("Max bank value for ~p is ~p~n", [H, MaxBankValue]),
     sum_max_banks(T, NumDigits, Acc + MaxBankValue).
 
 get_max_bank_value(Bank, NumDigits) -> get_max_bank_value(Bank, NumDigits, 0).
