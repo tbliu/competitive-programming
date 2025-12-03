@@ -7,13 +7,7 @@ main(_) ->
     SumInvalid = sum_invalid(Lines),
     io:format("Part 1: ~p~n", [SumInvalid]),
 
-    % Part 2:
-    % - start with first digit; copy it as many times to get it into range. Add to SumInvalid
-    % - once you can no longer add digits, take the first two digits slice; copy it as many times to get it into range
-    % - repeat until you've gone past half the digits. Keep a running list of invalids you added so you don't double count
     SumAllInvalid = sum_invalid2(Lines),
-
-    % Incorrect: 49046139643 - too low
     io:format("Part 2: ~p~n", [SumAllInvalid]),
     done.
 
@@ -23,8 +17,6 @@ sum_invalid2(Lines) -> sum_invalid2(Lines, 0).
 sum_invalid2([], Acc) -> Acc;
 sum_invalid2([H|T], Acc) ->
     [Start|[End|_]] = string:split(H, "-", all),
-    io:format("Handling ~p to ~p~n", [Start, End]),
-
     RangeSum = sum_all_repeating(Start, End),
     sum_invalid2(T, Acc + RangeSum).
 
@@ -36,8 +28,6 @@ sum_all_repeating(Start, End) ->
     RangeSum.
 
 
-% I feel like we might need a tracking of the desired target length and the slice length
-% to track if it's evenly dividing
 sum_all_repeating(Start, End, TakeFirstN, TargetLength, MaxLength, Seen, Acc) ->
     case TakeFirstN of
         _ when TargetLength > MaxLength ->
@@ -47,8 +37,6 @@ sum_all_repeating(Start, End, TakeFirstN, TargetLength, MaxLength, Seen, Acc) ->
         TFN when TargetLength rem TFN =/= 0 ->
             sum_all_repeating(Start, End, TakeFirstN + 1, TargetLength, MaxLength, Seen, Acc);
         TFN ->
-            % io:format("Args: TFN ~p Target Length ~p Max Length ~p~n", [TakeFirstN, TargetLength, MaxLength]),
-            % FirstNDigits = min(lists:sublist(Start, TFN), lists:sublist(End, TFN)),
             FirstNDigits = "1" ++ string:copies("0", TFN-1),
             NumRepeat = TargetLength div TFN,
             {RangeSum1, NewSeen1} = sum_all_repeating_length(Start, End, FirstNDigits, NumRepeat, Seen, 0),
@@ -77,11 +65,8 @@ sum_all_repeating_length(Start, End, Curr, NumRepeat, Seen, Acc) ->
     {StartNum, _} = string:to_integer(Start),
     {EndNum, _} = string:to_integer(End),
 
-    % io:format("Start num ~p End num ~p Num Repeat ~p Cand num ~p~n", [StartNum, EndNum, NumRepeat, CandNum]),
-
     case CandNum2 of
         CN when CN < StartNum ->
-            % io:format("Args; NumRepeat ~p Curr ~p Candidate ~p~n", [NumRepeat, Curr, Candidate]),
             sum_all_repeating_length(
                 Start,
                 End,
@@ -93,8 +78,6 @@ sum_all_repeating_length(Start, End, Curr, NumRepeat, Seen, Acc) ->
         CN when CN > EndNum ->
             {Acc, Seen};
         _ ->
-            % io:format("Args; NumRepeat ~p Curr ~p Candidate ~p~n", [NumRepeat, Curr, Candidate]),
-            io:format("Taking invalid ~p~n", [CandNum2]),
             sum_all_repeating_length(
                 Start,
                 End,
@@ -111,10 +94,6 @@ sum_invalid(Lines) -> sum_invalid(Lines, 0).
 sum_invalid([], Acc) -> Acc;
 sum_invalid([H|T], Acc) ->
     [Start|[End|_]] = string:split(H, "-", all),
-
-    % We can skip any number with an odd number of digits
-    % Get first and last invalid numbers based on the range boundaries
-    % sum over invalid for first_invalid -> last_invalid, iterating over first half
     RangeSum = sum_invalid_in_range(Start, End),
     sum_invalid(T, Acc + RangeSum).
 
@@ -134,7 +113,6 @@ get_next_invalid(NumStr, End) ->
     FirstHalf = lists:sublist(NewNumStr, NewStrLen div 2),
 
     Candidate = FirstHalf ++ FirstHalf,
-    % io:format("Candidate ~p ~p~n", [Candidate, NumStr]),
 
     {CandNum, _} = string:to_integer(Candidate),
     {Num, _} = string:to_integer(NumStr),
